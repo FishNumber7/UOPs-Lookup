@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+
+instructions.xml
+settings.json
