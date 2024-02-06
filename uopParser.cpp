@@ -1,4 +1,5 @@
-#include "./pugixml.hpp"
+#include "pugixml.hpp"
+#include "uopParser.hpp"
 #include <iostream>
 #include <cstring>
 
