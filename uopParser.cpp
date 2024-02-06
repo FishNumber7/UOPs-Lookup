@@ -1,44 +1,35 @@
-#include "pugixml.hpp"
+#include "./pugixml.hpp"
 #include <iostream>
+#include <cstring>
 
-class UOP_Lookup{
+pugi::xml_document doc;
+pugi::xml_parse_result result = doc.load_file("instructions.xml");
+const char *arch = "";
+const char *current_instruction  = "";
 
-public:
+bool find_instruction(pugi::xml_node node) 
+{
+    return strcmp(node.attribute("string").value(), current_instruction) == 0;
+}
 
-    void set_architecture(std::string architecture) 
-    {
-        arch = architecture; 
+bool find_arch(pugi::xml_node node)
+{
+    return strcmp(node.attribute("name").value(), arch) == 0;
+}
+
+bool find_uops(pugi::xml_attribute attr)
+{
+    return strcmp(attr.name(), "uops") == 0;
+}
+
+const char* lookup(const char* instruction, const char* architecture)
+{
+    if (result) {
+        current_instruction = instruction;
+        arch = architecture;
+        const char *uops = doc.find_node(find_instruction).find_child(find_arch).first_child().find_attribute(find_uops).value();
+        return uops;
+    } else {
+        return NULL;
     }
-
-    int lookup(std::string instruction)
-    {
-        if (result) {
-            this.instruction = instruction;
-            return doc.find_child(find_instruction).find_child(find_arch).first_child().find_attribute(find_uops).value();
-        }
-    }
-
-
-private:
-
-    pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_file("instructions.xml");
-    std::string arch;
-    std:string instruction  = "";
-
-    bool find_instruction(pugi::xml_node node) 
-    {
-        return strcmp(node.attribute("string"), instruction) == 0;
-    }
-
-    bool find_arch(pugi::xml_node node)
-    {
-        return strcmp(node.attribute("name"), arch) == 0;
-    }
-
-    bool find_uops(pugi::xml_attribute attr)
-    {
-        return strcmp(attr.name(), "uops") == 0;
-    }
-
-};
+}

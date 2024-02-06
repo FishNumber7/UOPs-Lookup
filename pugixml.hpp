@@ -645,9 +645,7 @@ namespace pugi
 		template <typename Predicate> xml_node find_node(Predicate pred) const
 		{
 			if (!_root) return xml_node();
-
 			xml_node cur = first_child();
-
 			while (cur._root && cur._root != _root)
 			{
 				if (pred(cur)) return cur;
