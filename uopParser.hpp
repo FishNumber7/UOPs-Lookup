@@ -3,11 +3,6 @@
 
 #include <stdint.h>
 
-struct operand {
-    uint8_t size;
-    const char[1] orientation = "";
-}
-
-const char* lookup(const char* instruction, operand op1_size, operand op2_size, operand op3_size, const char* architecture);
+const char* lookup(const char* instruction, const char* op1_size, const char* op2_size, const char* op3_size, const char* architecture);
 
 #endif
