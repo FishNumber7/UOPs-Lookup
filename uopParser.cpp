@@ -63,3 +63,19 @@ const char* lookup(const char* instruction, const char* op1_size, const char* op
         return NULL;
     }
 }
+
+int bfs() {
+    std::map<const char*, std::unordered_map<const char*, int>> mapping;
+    for (pugi::xml_node extension = doc.child("extension"); extension; extension = extension.next_sibling("extension")) {
+        for (pugi::xml_node instruction = extension.child("instruction"); instruction; instruction.next_sibling("instruction")) {
+            for (pugi::xml_node architecture = instruction.child("architecture"); architecture; architecture.next_sibling("architecture")) {
+                std::cout << instruction.name() << " " << architecture.name() << " " << find_attribute(find_uops) << std::endl;
+                return 0;
+            }
+        }
+    }
+}
+
+int main() {
+    bfs();
+}
