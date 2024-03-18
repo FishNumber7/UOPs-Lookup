@@ -63,3 +63,12 @@ const char* lookup(const char* instruction, const char* op1_size, const char* op
         return NULL;
     }
 }
+
+void build_csv() {
+    std::string convert("ADC (M8, 0)");
+    convert.replace(convert.find(" ("), 2, "_");
+}
+
+int main() {
+    std::cout << build_csv() << std::endl;
+}
