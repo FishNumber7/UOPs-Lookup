@@ -4,6 +4,7 @@
 #include <cstring>
 #include <stdint.h>
 #include <string>
+#include <fstream>
 
 pugi::xml_document doc;
 pugi::xml_parse_result result = doc.load_file("instructions.xml");
@@ -13,6 +14,11 @@ std::string current_instruction  = "";
 bool find_instruction(pugi::xml_node node) 
 {
     return strcmp(node.attribute("string").value(), current_instruction.c_str()) == 0;
+}
+
+bool find_base(pugi::xml_node node)
+{
+    return strcmp(node.attribute("name").value(), "BASE") == 0;
 }
 
 bool find_arch(pugi::xml_node node)
@@ -101,17 +107,68 @@ const char* naive_lookup(const char* instruction, const char* architecture)
      if (result) {
         current_instruction = naive_convert(instruction);
         arch = architecture;
-        return doc.find_node(find_instruction).find_child(find_arch).first_child().find_attribute(find_uops).value();
+        return doc.first_child().find_child(find_instruction).find_child(find_arch).first_child().find_attribute(find_uops).value();
     } else {
         return NULL;
     }
 }
 
 void build_csv() {
-    std::string convert("ADC (M8, 0)");
-    convert.replace(convert.find(" ("), 2, "_");
+    pugi::xml_node base = doc.first_child().find_child(find_base);
+    std::ofstream file;
+    file.open ("uops_translation.csv", std::ofstream::out | std::ofstream::trunc);
+    for (pugi::xml_node current_instruction = base.child("instruction"); current_instruction; current_instruction = current_instruction.next_sibling("instruction")) {
+        const char* instruction = current_instruction.attribute("string").value();
+        std::string convert(instruction);
+        if (convert.find("LEA") != -1) {
+            if (convert.find("R16") != -1) {
+                convert.assign("LEA_R16_M16");
+            } else if (convert.find("R32") != -1) {
+                convert.assign("LEA_R32_M32");
+            } else if (convert.find("R64") != -1) {
+                convert.assign("LEA_R64_M64");
+            }
+        }
+
+        int parentheses = convert.find(" (");
+        int underscore = convert.find('_');
+        if (underscore != -1 && parentheses - underscore == 3) {
+            convert.replace(underscore, 3, "");
+        }
+        
+        parentheses = convert.find(" (");
+        if (parentheses != -1) {
+            convert.replace(parentheses, 2, "_");
+        }
+
+        int comma = convert.find(", ");
+        if (comma != -1) {
+            convert.replace(comma, 2, "_");
+        }
+
+        comma = convert.find(", ");
+        if (comma != -1) {
+            convert.replace(comma, 2, "_");
+        } 
+
+        if (convert.find(")") != -1) {
+            convert.pop_back();
+        }
+
+        int rel = convert.find("Rel");
+        if (rel != -1) {
+            convert.replace(rel, 3, "I");
+        }
+
+        if (convert.back() == '0') {
+            continue;
+        }
+
+        file << convert.c_str() << "," << instruction << std::endl;
+    }
+    file.close();
 }
 
 int main() {
-    std::cout << build_csv() << std::endl;
+    build_csv();
 }
