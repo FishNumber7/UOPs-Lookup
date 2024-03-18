@@ -53,10 +53,53 @@ std::string convert(const char* instruction, const char* op1_size, const char* o
     }
 }
 
+std::string naive_convert(const char* instruction)
+{
+    std::string converter(instruction);
+    int op_count = 0;
+    int position = converter.find_first_of('_');
+    while (position != -1) {
+        int last_position = position;
+        position = converter.find_first_of('_', last_position + 1);
+        if (last_position != -1 && (position - last_position == 2 || converter.size() - last_position == 2)) {
+            op_count++;
+        }
+    }
+
+    switch(op_count) {
+        case 0: 
+            return convert(instruction, NULL, NULL, NULL);
+            break;
+        case 1:
+            return convert(instruction, "64", NULL, NULL);
+            break;
+        case 2:
+            return convert(instruction, "64", "32", NULL);
+            break;
+        case 3:
+            return convert(instruction, "64", "32", "32");
+            break;
+        default:
+            return "not found";
+            break;
+    }
+}
+
 const char* lookup(const char* instruction, const char* op1_size, const char* op2_size, const char* op3_size, const char* architecture)
 {
     if (result) {
         current_instruction = convert(instruction, op1_size, op2_size, op3_size);
+        arch = architecture;
+        return doc.find_node(find_instruction).find_child(find_arch).first_child().find_attribute(find_uops).value();
+    } else {
+        return NULL;
+    }
+}
+
+const char* naive_lookup(const char* instruction, const char* architecture)
+{
+     if (result) {
+        current_instruction = naive_convert(instruction);
         arch = architecture;
         return doc.find_node(find_instruction).find_child(find_arch).first_child().find_attribute(find_uops).value();
     } else {
